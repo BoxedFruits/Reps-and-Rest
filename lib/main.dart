@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -11,22 +9,25 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text("Rest and Reps"),
         ),
-        home: Scaffold(
-          appBar: AppBar(
-            title: Text("Rest and Reps"),
+        body: TimerList(),
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(child: Text('Timers')),
+            ],
           ),
-          body: TimerList(),
-          drawer: Drawer(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: <Widget>[DrawerHeader(child: Text('Timers'))],
-            ),
-          ),
-        ));
+        ),
+      ),
+    );
   }
 }
 
@@ -38,11 +39,19 @@ class TimerList extends StatefulWidget {
 }
 
 class _TimerListState extends State<TimerList> {
-  int timers = 1;
+  List<Timer> timers = [];
 
   _addTimer() {
+    final newIndex = timers.length;
+    final newTimer = Timer(
+      key: ValueKey(newIndex),
+      timerIndex: newIndex,
+      excerciseName: "New Excercise",
+      excerciseDuration: new Duration(minutes: 0, seconds: 0),
+    );
+
     setState(() {
-      timers += 1;
+      timers.add(newTimer);
     });
   }
 
@@ -51,7 +60,7 @@ class _TimerListState extends State<TimerList> {
     return Column(children: [
       Expanded(
         child: ListView.builder(
-            itemCount: this.timers,
+            itemCount: timers.length,
             itemBuilder: (context, index) => this._buildTimer(index)),
       ),
       ElevatedButton(onPressed: _addTimer, child: Text("Add Timer")),
@@ -62,89 +71,104 @@ class _TimerListState extends State<TimerList> {
   }
 
   _buildTimer(int timerIndex) {
-    //Each row show be a widget. Should have Gif/image of Rxcercise, Excercise name and timer length
-    return Timer(
-        timerIndex: timerIndex,
-        excerciseName: "New Excercise",
-        timerDuration: new Duration(minutes: 0, seconds: 0));
+    return timers[timerIndex];
   }
 }
 
 class Timer extends StatefulWidget {
-  Timer(
-      {Key? key,
-      required this.timerIndex,
-      required this.excerciseName,
-      required this.timerDuration})
-      : super(key: key);
+  Timer({
+    Key? key,
+    required this.timerIndex,
+    required this.excerciseName,
+    required this.excerciseDuration,
+  }) : super(key: key);
 
-  int timerIndex;
-  String excerciseName;
-  Duration timerDuration;
+  final int timerIndex;
+  final Duration excerciseDuration;
+  final String excerciseName;
 
   @override
   _TimerState createState() => _TimerState();
 }
 
 class _TimerState extends State<Timer> {
+  late Duration excerciseDuration;
+  late String excerciseName;
+  late TextEditingController _excerciseNameController;
+
+  @override
+  void initState() {
+    excerciseDuration = widget.excerciseDuration;
+    excerciseName = widget.excerciseName;
+    _excerciseNameController = TextEditingController(text: excerciseName);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _excerciseNameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> updateExcercise() async {
+    // call set sate to rebuild the widget
+    setState(() {
+      excerciseName = _excerciseNameController.text;
+    });
+  }
+
+  //Needs to be stateful so that user can pause timer.
   @override
   Widget build(BuildContext context) {
-    Future<void> setExcerciseName(passedInName) async {
-      setState(() {
-        widget.excerciseName = passedInName;
-      });
-    }
-
-    Future<void> setTimerDuration(timer) async {
-      setState(() {
-        widget.timerDuration = timer;
-      });
-    }
-
     return ListTile(
       isThreeLine: true,
-      title: Text((widget.timerIndex + 1).toString() +
-          " " +
-          widget.excerciseName.toString()),
-      subtitle: Text('Duration: ' + widget.timerDuration.toString()),
+      title: Text(
+        (widget.timerIndex + 1).toString() + " " + excerciseName,
+      ),
+      subtitle: Text('Time left ${excerciseDuration.inSeconds} seconds'),
       onTap: () {
-        _popDialog(context, widget.excerciseName, widget.timerDuration,
-            setExcerciseName, setTimerDuration);
+        _showDialog(
+          context,
+          updateExcercise,
+        ); //When creating a new timer, have Exercise name as default
       },
     );
   }
-}
 
-_popDialog(BuildContext context, String excerciseName, Duration timerDuration,
-    Function setExcerciseName, Function setTimerDuration) {
-  TextEditingController _excerciseNameController;
-  // Duration timerDuration = timerDuration;
-  _excerciseNameController =
-      TextEditingController.fromValue(TextEditingValue(text: excerciseName));
-  showDialog(
+  _showDialog(
+    BuildContext context,
+    Function updateExcerciseCallback,
+  ) {
+    showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return new SimpleDialog(
-            title: TextField(
-              controller: _excerciseNameController,
-            ),
-            children: [
-              Container(
-                  width: 280,
-                  height: 280,
-                  child: CupertinoTimerPicker(
-                      mode: CupertinoTimerPickerMode.ms,
-                      onTimerDurationChanged: (newTime) {
-                        timerDuration = newTime;
-                      })),
-              new TextButton(
-                child: new Text('Save'),
-                onPressed: () {
-                  setExcerciseName(_excerciseNameController.text);
-                  setTimerDuration(timerDuration);
-                  Navigator.of(context).pop();
+          title: TextField(
+            controller: _excerciseNameController,
+          ),
+          children: [
+            Container(
+              width: 280,
+              height: 280,
+              child: CupertinoTimerPicker(
+                mode: CupertinoTimerPickerMode.ms,
+                onTimerDurationChanged: (newTime) {
+                  excerciseDuration = newTime;
                 },
               ),
-            ]);
-      });
+            ),
+            new TextButton(
+              child: new Text('Save'),
+              onPressed: () {
+                //SetState when clicking saved
+                updateExcerciseCallback();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
