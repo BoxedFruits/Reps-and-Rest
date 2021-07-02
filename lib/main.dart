@@ -66,7 +66,7 @@ class _TimerListState extends State<TimerList> {
     return Timer(
         timerIndex: timerIndex,
         excerciseName: "New Excercise",
-        excerciseDuration: new Duration(minutes: 0, seconds: 0));
+        timerDuration: new Duration(minutes: 0, seconds: 0));
   }
 }
 
@@ -75,25 +75,29 @@ class Timer extends StatefulWidget {
       {Key? key,
       required this.timerIndex,
       required this.excerciseName,
-      required this.excerciseDuration})
+      required this.timerDuration})
       : super(key: key);
 
   int timerIndex;
   String excerciseName;
-  Duration excerciseDuration;
+  Duration timerDuration;
 
   @override
   _TimerState createState() => _TimerState();
 }
 
 class _TimerState extends State<Timer> {
-  //Needs to be stateful so that user can pause timer.
   @override
   Widget build(BuildContext context) {
     Future<void> setExcerciseName(passedInName) async {
-      print(passedInName);
       setState(() {
         widget.excerciseName = passedInName;
+      });
+    }
+
+    Future<void> setTimerDuration(timer) async {
+      setState(() {
+        widget.timerDuration = timer;
       });
     }
 
@@ -102,22 +106,19 @@ class _TimerState extends State<Timer> {
       title: Text((widget.timerIndex + 1).toString() +
           " " +
           widget.excerciseName.toString()),
-      subtitle: Text('Time left'),
+      subtitle: Text('Duration: ' + widget.timerDuration.toString()),
       onTap: () {
-        setState(() {
-          widget.excerciseName = "mememe";
-        });
-        _popDialog(context, widget.excerciseName,
-            setExcerciseName); //When creating a new timer, have Exercise name as default
+        _popDialog(context, widget.excerciseName, widget.timerDuration,
+            setExcerciseName, setTimerDuration);
       },
     );
   }
 }
 
-_popDialog(BuildContext context, String excerciseName,
-    Function setExcerciseNameCallback) {
+_popDialog(BuildContext context, String excerciseName, Duration timerDuration,
+    Function setExcerciseName, Function setTimerDuration) {
   TextEditingController _excerciseNameController;
-
+  // Duration timerDuration = timerDuration;
   _excerciseNameController =
       TextEditingController.fromValue(TextEditingValue(text: excerciseName));
   showDialog(
@@ -134,14 +135,13 @@ _popDialog(BuildContext context, String excerciseName,
                   child: CupertinoTimerPicker(
                       mode: CupertinoTimerPickerMode.ms,
                       onTimerDurationChanged: (newTime) {
-                        //newTime is what will set the new duration. newTime is typeof Duration.
-                        print(newTime);
+                        timerDuration = newTime;
                       })),
               new TextButton(
                 child: new Text('Save'),
                 onPressed: () {
-                  //SetState when clicking saved
-                  setExcerciseNameCallback(_excerciseNameController.text);
+                  setExcerciseName(_excerciseNameController.text);
+                  setTimerDuration(timerDuration);
                   Navigator.of(context).pop();
                 },
               ),
