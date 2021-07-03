@@ -71,13 +71,19 @@ class _TimerListState extends State<TimerList> {
             minChildSize: 0.085,
             builder: (BuildContext context, ScrollController scrollController) {
               return IntrinsicHeight(
-                  child: ListView(controller: scrollController, children: [
-                ElevatedButton(onPressed: _addTimer, child: Text("Add Timer")),
-                ElevatedButton(onPressed: () {}, child: Text("Start Workout")),
-                ElevatedButton(onPressed: () {}, child: Text("Pause Timer")),
-                ElevatedButton(
-                    onPressed: () {}, child: Text("Reset Current Timer")),
-              ]));
+                  child: Container(
+                      color: Colors.white,
+                      child: ListView(controller: scrollController, children: [
+                        ElevatedButton(
+                            onPressed: _addTimer, child: Text("Add Timer")),
+                        ElevatedButton(
+                            onPressed: () {}, child: Text("Start Workout")),
+                        ElevatedButton(
+                            onPressed: () {}, child: Text("Pause Timer")),
+                        ElevatedButton(
+                            onPressed: () {},
+                            child: Text("Reset Current Timer")),
+                      ])));
             },
           ),
         )
