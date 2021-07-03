@@ -9,25 +9,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text("Rest and Reps"),
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
         ),
-        body: TimerList(),
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              DrawerHeader(child: Text('Timers')),
-            ],
-          ),
-        ),
-      ),
-    );
+        home: Scaffold(
+            appBar: AppBar(
+              title: Text("Rest and Reps"),
+            ),
+            body: TimerList(),
+            drawer: Drawer(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: <Widget>[
+                  DrawerHeader(child: Text('Timers')),
+                ],
+              ),
+            )));
   }
 }
 
@@ -57,16 +55,33 @@ class _TimerListState extends State<TimerList> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Expanded(
-        child: ListView.builder(
-            itemCount: timers.length,
-            itemBuilder: (context, index) => this._buildTimer(index)),
-      ),
-      ElevatedButton(onPressed: _addTimer, child: Text("Add Timer")),
-      ElevatedButton(onPressed: () {}, child: Text("Start Workout")),
-      ElevatedButton(onPressed: () {}, child: Text("Pause Timer")),
-      ElevatedButton(onPressed: () {}, child: Text("Reset Current Timer"))
+    return Stack(children: [
+      Flex(direction: Axis.vertical, children: [
+        Expanded(
+          child: ListView.builder(
+              itemCount: timers.length,
+              itemBuilder: (context, index) => this._buildTimer(index)),
+        )
+      ]),
+      Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+        Container(
+          height: 200,
+          child: DraggableScrollableSheet(
+            expand: false,
+            minChildSize: 0.085,
+            builder: (BuildContext context, ScrollController scrollController) {
+              return IntrinsicHeight(
+                  child: ListView(controller: scrollController, children: [
+                ElevatedButton(onPressed: _addTimer, child: Text("Add Timer")),
+                ElevatedButton(onPressed: () {}, child: Text("Start Workout")),
+                ElevatedButton(onPressed: () {}, child: Text("Pause Timer")),
+                ElevatedButton(
+                    onPressed: () {}, child: Text("Reset Current Timer")),
+              ]));
+            },
+          ),
+        )
+      ])
     ]);
   }
 
@@ -125,12 +140,12 @@ class _TimerState extends State<Timer> {
       title: Text(
         (widget.timerIndex + 1).toString() + " " + excerciseName,
       ),
-      subtitle: Text('Time left ${excerciseDuration.inSeconds} seconds'),
+      subtitle: Text('Time left: ${excerciseDuration.inSeconds} seconds'),
       onTap: () {
         _showDialog(
           context,
           updateExcercise,
-        ); //When creating a new timer, have Exercise name as default
+        );
       },
     );
   }
