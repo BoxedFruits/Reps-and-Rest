@@ -40,6 +40,9 @@ class TimerList extends StatefulWidget {
 class _TimerListState extends State<TimerList> {
   List<Timer> timers = [];
   int currentTimerIndex = 0;
+  String actionText = "Start Workout";
+  PausableTimer currentTimer =
+      PausableTimer(Duration(minutes: 0, seconds: 0), () {});
 
   _addTimer() {
     final newIndex = timers.length;
@@ -58,27 +61,60 @@ class _TimerListState extends State<TimerList> {
     return timers[timerIndex];
   }
 
-  _startWorkout() async {
+  _startWorkout() {
     //Start at 0 index of timers and start duration. Highlight current Timer
+    //Play sound?
+
     if (currentTimerIndex < timers.length) {
-      print(currentTimerIndex);
-      final currentTimer = PausableTimer(
+      setState(() {
+        actionText = "Pause Workout";
+      });
+
+      currentTimer = PausableTimer(
           timers[currentTimerIndex].excerciseDuration,
           () => {
                 print('Fired! for timer: ' +
                     timers[currentTimerIndex].excerciseName),
                 currentTimerIndex += 1,
-                _startWorkout()
+                _startWorkout() //Trying to take advantage of callback that fires when timer is done.
               });
       currentTimer.start();
     } else {
-      print("No more timers");
+      setState(() {
+        actionText = "Start Workout";
+      });
       currentTimerIndex = 0;
     }
   }
 
+  _pauseWorkout(PausableTimer activeTimer) {
+    setState(() {
+      actionText = "Resume Workout";
+    });
+
+    activeTimer.pause();
+  }
+
+  _resumeWorkout(PausableTimer activeTimer) {
+    setState(() {
+      actionText = "Pause Workout";
+    });
+
+    activeTimer.start();
+  }
+
+  _workoutHandler(PausableTimer activeTimer) {
+    if (activeTimer.isActive) {
+      _pauseWorkout(activeTimer);
+    } else if (activeTimer.isPaused &&
+        activeTimer.elapsed > Duration(milliseconds: 100)) {
+      _resumeWorkout(activeTimer);
+    } else {
+      _startWorkout();
+    }
+  }
+
   // _resetWorkout() {} //Reset currentTimer and then reset currentTimerIndex back to 0. call startWorkout.
-  // _pauseWorkout() {} //Pause currentTimer. If yes, Text of button should change to "Resume Workout".
   // _resetCurrentWorkout() {} //Reset currentTimer. Take in currentTimerIndex and pause that.
 
   @override
@@ -94,7 +130,7 @@ class _TimerListState extends State<TimerList> {
       Column(mainAxisAlignment: MainAxisAlignment.end, children: [
         //Should try to make this bottom nav bar on Scaffold
         Container(
-          height: 200,
+          height: 150,
           child: DraggableScrollableSheet(
             expand: false,
             minChildSize: 0.085,
@@ -107,10 +143,10 @@ class _TimerListState extends State<TimerList> {
                         ElevatedButton(
                             onPressed: _addTimer, child: Text("Add Timer")),
                         ElevatedButton(
-                            onPressed: _startWorkout,
-                            child: Text("Start Workout")),
-                        ElevatedButton(
-                            onPressed: () {}, child: Text("Pause Timer")),
+                            onPressed: () {
+                              _workoutHandler(currentTimer);
+                            },
+                            child: Text(actionText)),
                         ElevatedButton(
                             onPressed: () {},
                             child: Text("Reset Current Timer")),
