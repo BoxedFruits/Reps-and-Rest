@@ -104,6 +104,7 @@ class _TimerListState extends State<TimerList> {
   }
 
   _workoutHandler(PausableTimer activeTimer) {
+    //Make this more general purpose. Pass in enum to identify events: Pause, Resume, Start, ResetAllWorkouts, ResetCurrentWorkout
     if (activeTimer.isActive) {
       _pauseWorkout(activeTimer);
     } else if (activeTimer.isPaused &&
@@ -115,7 +116,13 @@ class _TimerListState extends State<TimerList> {
   }
 
   // _resetWorkout() {} //Reset currentTimer and then reset currentTimerIndex back to 0. call startWorkout.
-  // _resetCurrentWorkout() {} //Reset currentTimer. Take in currentTimerIndex and pause that.
+  _resetCurrentExcercise(PausableTimer activeTimer) {
+    //Show flood for last excercise when this is pressed?
+    setState(() {
+      actionText = "Pause Workout";
+    });
+    activeTimer.reset();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,12 +150,11 @@ class _TimerListState extends State<TimerList> {
                         ElevatedButton(
                             onPressed: _addTimer, child: Text("Add Timer")),
                         ElevatedButton(
-                            onPressed: () {
-                              _workoutHandler(currentTimer);
-                            },
+                            onPressed: () => _workoutHandler(currentTimer),
                             child: Text(actionText)),
                         ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () =>
+                                _resetCurrentExcercise(currentTimer),
                             child: Text("Reset Current Timer")),
                       ])));
             },
