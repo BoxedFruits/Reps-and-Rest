@@ -38,6 +38,7 @@ class TimerList extends StatefulWidget {
 
 class _TimerListState extends State<TimerList> {
   List<Timer> timers = [];
+  int currentTimerIndex = 0;
 
   _addTimer() {
     final newIndex = timers.length;
@@ -53,6 +54,15 @@ class _TimerListState extends State<TimerList> {
     });
   }
 
+  _buildTimer(int timerIndex) {
+    return timers[timerIndex];
+  }
+
+  // _startWorkout() {} //Start at 0 index of timers and start duration. Timer.periodic callback to start next one. Highlight current Timer?
+  // _resetWorkout() {} //Reset currentTimer and then reset currentTimerIndex back to 0. call startWorkout.
+  // _pauseWorkout() {} //Pause currentTimer. If yes, Text of button should change to "Resume Workout". Can also use this: https://github.com/llucax/pausable_timer/blob/main/lib/pausable_timer.dart
+  // _resetCurrentWorkout() {} //Reset currentTimer
+
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
@@ -64,6 +74,7 @@ class _TimerListState extends State<TimerList> {
         )
       ]),
       Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+        //Should try to make this bottom nav bar on Scaffold
         Container(
           height: 200,
           child: DraggableScrollableSheet(
@@ -74,6 +85,7 @@ class _TimerListState extends State<TimerList> {
                   child: Container(
                       color: Colors.white,
                       child: ListView(controller: scrollController, children: [
+                        //Need to add a bit of styling ot make it look better and obvious that its a draggableDrawer
                         ElevatedButton(
                             onPressed: _addTimer, child: Text("Add Timer")),
                         ElevatedButton(
@@ -89,10 +101,6 @@ class _TimerListState extends State<TimerList> {
         )
       ])
     ]);
-  }
-
-  _buildTimer(int timerIndex) {
-    return timers[timerIndex];
   }
 }
 
@@ -112,10 +120,13 @@ class Timer extends StatefulWidget {
   _TimerState createState() => _TimerState();
 }
 
-class _TimerState extends State<Timer> {
+class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
   late Duration excerciseDuration;
   late String excerciseName;
   late TextEditingController _excerciseNameController;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -138,7 +149,6 @@ class _TimerState extends State<Timer> {
     });
   }
 
-  //Needs to be stateful so that user can pause timer.
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -162,7 +172,6 @@ class _TimerState extends State<Timer> {
   ) {
     showDialog(
       context: context,
-      barrierDismissible: false,
       builder: (BuildContext context) {
         return new SimpleDialog(
           title: TextField(
