@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:pausable_timer/pausable_timer.dart';
 
 void main() {
   runApp(MyApp());
@@ -43,11 +44,10 @@ class _TimerListState extends State<TimerList> {
   _addTimer() {
     final newIndex = timers.length;
     final newTimer = Timer(
-      key: ValueKey(newIndex),
-      timerIndex: newIndex,
-      excerciseName: "New Excercise",
-      excerciseDuration: new Duration(minutes: 0, seconds: 0),
-    );
+        key: ValueKey(newIndex),
+        timerIndex: newIndex,
+        excerciseName: "New Excercise",
+        excerciseDuration: new Duration(minutes: 0, seconds: 0));
 
     setState(() {
       timers.add(newTimer);
@@ -58,10 +58,28 @@ class _TimerListState extends State<TimerList> {
     return timers[timerIndex];
   }
 
-  // _startWorkout() {} //Start at 0 index of timers and start duration. Timer.periodic callback to start next one. Highlight current Timer?
+  _startWorkout() async {
+    //Start at 0 index of timers and start duration. Highlight current Timer
+    if (currentTimerIndex < timers.length) {
+      print(currentTimerIndex);
+      final currentTimer = PausableTimer(
+          timers[currentTimerIndex].excerciseDuration,
+          () => {
+                print('Fired! for timer: ' +
+                    timers[currentTimerIndex].excerciseName),
+                currentTimerIndex += 1,
+                _startWorkout()
+              });
+      currentTimer.start();
+    } else {
+      print("No more timers");
+      currentTimerIndex = 0;
+    }
+  }
+
   // _resetWorkout() {} //Reset currentTimer and then reset currentTimerIndex back to 0. call startWorkout.
-  // _pauseWorkout() {} //Pause currentTimer. If yes, Text of button should change to "Resume Workout". Can also use this: https://github.com/llucax/pausable_timer/blob/main/lib/pausable_timer.dart
-  // _resetCurrentWorkout() {} //Reset currentTimer
+  // _pauseWorkout() {} //Pause currentTimer. If yes, Text of button should change to "Resume Workout".
+  // _resetCurrentWorkout() {} //Reset currentTimer. Take in currentTimerIndex and pause that.
 
   @override
   Widget build(BuildContext context) {
@@ -85,11 +103,12 @@ class _TimerListState extends State<TimerList> {
                   child: Container(
                       color: Colors.white,
                       child: ListView(controller: scrollController, children: [
-                        //Need to add a bit of styling ot make it look better and obvious that its a draggableDrawer
+                        //Need to add a bit of styling to make it look better and obvious that its a draggableDrawer
                         ElevatedButton(
                             onPressed: _addTimer, child: Text("Add Timer")),
                         ElevatedButton(
-                            onPressed: () {}, child: Text("Start Workout")),
+                            onPressed: _startWorkout,
+                            child: Text("Start Workout")),
                         ElevatedButton(
                             onPressed: () {}, child: Text("Pause Timer")),
                         ElevatedButton(
@@ -113,20 +132,20 @@ class Timer extends StatefulWidget {
   }) : super(key: key);
 
   final int timerIndex;
-  final Duration excerciseDuration;
-  final String excerciseName;
+  Duration excerciseDuration;
+  String excerciseName;
 
   @override
   _TimerState createState() => _TimerState();
 }
 
-class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
+class _TimerState extends State<Timer> {
   late Duration excerciseDuration;
   late String excerciseName;
   late TextEditingController _excerciseNameController;
 
-  @override
-  bool get wantKeepAlive => true;
+  // @override
+  // bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -146,6 +165,7 @@ class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
     // call set sate to rebuild the widget
     setState(() {
       excerciseName = _excerciseNameController.text;
+      widget.excerciseName = excerciseName;
     });
   }
 
@@ -185,6 +205,7 @@ class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
                 mode: CupertinoTimerPickerMode.ms,
                 onTimerDurationChanged: (newTime) {
                   excerciseDuration = newTime;
+                  widget.excerciseDuration = excerciseDuration;
                 },
               ),
             ),
