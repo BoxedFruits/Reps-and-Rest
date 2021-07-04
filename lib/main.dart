@@ -63,13 +63,12 @@ class _TimerListState extends State<TimerList> {
 
   _startWorkout() {
     //Start at 0 index of timers and start duration. Highlight current Timer
-    //Play sound?
+    //Play sound at callback? If the sound has like 5 beats , can just add 5 more seconds to every timer so that it gives the user a headsup before the next excercise
 
     if (currentTimerIndex < timers.length) {
       setState(() {
         actionText = "Pause Workout";
       });
-
       currentTimer = PausableTimer(
           timers[currentTimerIndex].excerciseDuration,
           () => {
@@ -115,7 +114,17 @@ class _TimerListState extends State<TimerList> {
     }
   }
 
-  // _resetWorkout() {} //Reset currentTimer and then reset currentTimerIndex back to 0. call startWorkout.
+  _resetWorkout(PausableTimer activeTimer) {
+    //Reset currentTimer and then reset currentTimerIndex back to 0
+    setState(() {
+      actionText = "Start Workout";
+    });
+
+    activeTimer.cancel();
+    currentTimerIndex = 0;
+    _startWorkout();
+  }
+
   _resetCurrentExcercise(PausableTimer activeTimer) {
     //Show flood for last excercise when this is pressed?
     setState(() {
@@ -137,7 +146,7 @@ class _TimerListState extends State<TimerList> {
       Column(mainAxisAlignment: MainAxisAlignment.end, children: [
         //Should try to make this bottom nav bar on Scaffold
         Container(
-          height: 150,
+          height: 200,
           child: DraggableScrollableSheet(
             expand: false,
             minChildSize: 0.085,
@@ -152,6 +161,9 @@ class _TimerListState extends State<TimerList> {
                         ElevatedButton(
                             onPressed: () => _workoutHandler(currentTimer),
                             child: Text(actionText)),
+                        ElevatedButton(
+                            onPressed: () => _resetWorkout(currentTimer),
+                            child: Text("Reset Workout")),
                         ElevatedButton(
                             onPressed: () =>
                                 _resetCurrentExcercise(currentTimer),
