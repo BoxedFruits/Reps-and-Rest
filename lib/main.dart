@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'dart:typed_data';
 import 'package:pausable_timer/pausable_timer.dart';
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 void main() {
   runApp(MyApp());
 }
+
+const int _tSampleRate = 44100;
+const int _tNumChannels = 44;
 
 class MyApp extends StatelessWidget {
   @override
@@ -38,6 +44,11 @@ class TimerList extends StatefulWidget {
 }
 
 class _TimerListState extends State<TimerList> {
+  FlutterSoundPlayer? _myPlayer = FlutterSoundPlayer();
+  bool _mPlayerIsInited = false;
+  bool busy = false;
+  Uint8List? soundAffectData;
+
   List<Timer> timers = [];
   int currentTimerIndex = 0;
   String actionText = "Start Workout";
@@ -64,6 +75,7 @@ class _TimerListState extends State<TimerList> {
   _startWorkout() {
     //Start at 0 index of timers and start duration. Highlight current Timer
     //Play sound at callback? If the sound has like 5 beats , can just add 5 more seconds to every timer so that it gives the user a headsup before the next excercise
+    //https://tau.canardoux.xyz/tau_api_player_set_audio_focus.html
 
     if (currentTimerIndex < timers.length) {
       setState(() {
@@ -75,6 +87,7 @@ class _TimerListState extends State<TimerList> {
                 print('Fired! for timer: ' +
                     timers[currentTimerIndex].excerciseName),
                 currentTimerIndex += 1,
+                if (_mPlayerIsInited) {play(soundAffectData)},
                 _startWorkout() //Trying to take advantage of callback that fires when timer is done.
               });
       currentTimer.start();
@@ -131,6 +144,52 @@ class _TimerListState extends State<TimerList> {
       actionText = "Pause Workout";
     });
     activeTimer.reset();
+  }
+
+  void play(Uint8List? data) async {
+    if (!busy && _mPlayerIsInited) {
+      busy = true;
+      await _myPlayer!.feedFromStream(data!).then((value) => busy = false);
+    }
+    print("SOUND DOUNE");
+  }
+
+  Future<Uint8List> getAssetData(String path) async {
+    var asset = await rootBundle.load(path);
+    return asset.buffer.asUint8List();
+  }
+
+  Future<void> init() async {
+    await _myPlayer!.openAudioSession();
+    soundAffectData = FlutterSoundHelper().waveToPCMBuffer(
+      inputBuffer: await getAssetData(
+          'assets/soundaffects/mixkit-sport-start-bleeps-918.wav'),
+    );
+    await _myPlayer!.startPlayerFromStream(
+      codec: Codec.pcm16,
+      numChannels: _tNumChannels,
+      sampleRate: _tSampleRate,
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Be careful : openAudioSession return a Future.
+    // Do not access your FlutterSoundPlayer or FlutterSoundRecorder before the completion of the Future
+    init().then((value) => setState(() {
+          _mPlayerIsInited = true;
+        }));
+  }
+
+  @override
+  void dispose() {
+    // Be careful : you must `close` the audio session when you have finished with it.
+    _myPlayer!.stopPlayer();
+    _myPlayer!.closeAudioSession();
+    _myPlayer = null;
+
+    super.dispose();
   }
 
   @override
