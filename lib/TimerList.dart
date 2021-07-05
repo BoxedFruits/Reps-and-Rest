@@ -6,7 +6,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 
 const int _tSampleRate = 44100;
-const int _tNumChannels = 44;
+const int _tNumChannels = 2;
 
 class TimerList extends StatefulWidget {
   TimerList({Key? key}) : super(key: key);
@@ -45,10 +45,8 @@ class _TimerListState extends State<TimerList> {
   }
 
   _startWorkout() {
-    //Start at 0 index of timers and start duration. Highlight current Timer
+    //Start at 0 index of timers and start duration. Highlight current Timer?
     //Play sound at callback? If the sound has like 5 beats , can just add 5 more seconds to every timer so that it gives the user a headsup before the next excercise
-    //https://tau.canardoux.xyz/tau_api_player_set_audio_focus.html
-
     if (currentTimerIndex < timers.length) {
       setState(() {
         actionText = "Pause Workout";
@@ -60,7 +58,7 @@ class _TimerListState extends State<TimerList> {
                     timers[currentTimerIndex].excerciseName),
                 currentTimerIndex += 1,
                 if (_mPlayerIsInited) {play(soundAffectData)},
-                _startWorkout() //Trying to take advantage of callback that fires when timer is done.
+                _startWorkout()
               });
       currentTimer.start();
     } else {
@@ -147,8 +145,6 @@ class _TimerListState extends State<TimerList> {
   @override
   void initState() {
     super.initState();
-    // Be careful : openAudioSession return a Future.
-    // Do not access your FlutterSoundPlayer or FlutterSoundRecorder before the completion of the Future
     init().then((value) => setState(() {
           _mPlayerIsInited = true;
         }));
@@ -156,7 +152,6 @@ class _TimerListState extends State<TimerList> {
 
   @override
   void dispose() {
-    // Be careful : you must `close` the audio session when you have finished with it.
     _myPlayer!.stopPlayer();
     _myPlayer!.closeAudioSession();
     _myPlayer = null;
@@ -169,9 +164,19 @@ class _TimerListState extends State<TimerList> {
     return Stack(children: [
       Flex(direction: Axis.vertical, children: [
         Expanded(
-          child: ListView.builder(
-              itemCount: timers.length,
-              itemBuilder: (context, index) => this._buildTimer(index)),
+          child: ReorderableListView.builder(
+            itemCount: timers.length,
+            itemBuilder: (context, index) => this._buildTimer(index),
+            onReorder: (int oldIndex, int newIndex) {
+              setState(() {
+                if (oldIndex < newIndex) {
+                  newIndex -= 1;
+                }
+                final Timer item = timers.removeAt(oldIndex);
+                timers.insert(newIndex, item);
+              });
+            },
+          ),
         )
       ]),
       Column(mainAxisAlignment: MainAxisAlignment.end, children: [
