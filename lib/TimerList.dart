@@ -69,7 +69,10 @@ class _TimerListState extends State<TimerList> {
                 print('Fired! for timer: ' +
                     timers[currentTimerIndex].excerciseName),
                 currentTimerIndex += 1,
-                if (_mPlayerIsInited) {play(soundAffectData)},
+                if (_mPlayerIsInited)
+                  {
+                    play(soundAffectData)
+                  }, //Need to find a way to execute the sound when its 4 sec away from duration end.
                 _startWorkout()
               });
       currentTimer.start();
@@ -78,6 +81,18 @@ class _TimerListState extends State<TimerList> {
         actionText = "Start Workout";
       });
       currentTimerIndex = 0;
+    }
+  }
+
+  _workoutHandler(PausableTimer activeTimer) {
+    //Make this more general purpose. Pass in enum to identify events: Pause, Resume, Start, ResetAllWorkouts, ResetCurrentWorkout
+    if (activeTimer.isActive) {
+      _pauseWorkout(activeTimer);
+    } else if (activeTimer.isPaused &&
+        activeTimer.elapsed > Duration(milliseconds: 100)) {
+      _resumeWorkout(activeTimer);
+    } else {
+      _startWorkout();
     }
   }
 
@@ -95,18 +110,6 @@ class _TimerListState extends State<TimerList> {
     });
 
     activeTimer.start();
-  }
-
-  _workoutHandler(PausableTimer activeTimer) {
-    //Make this more general purpose. Pass in enum to identify events: Pause, Resume, Start, ResetAllWorkouts, ResetCurrentWorkout
-    if (activeTimer.isActive) {
-      _pauseWorkout(activeTimer);
-    } else if (activeTimer.isPaused &&
-        activeTimer.elapsed > Duration(milliseconds: 100)) {
-      _resumeWorkout(activeTimer);
-    } else {
-      _startWorkout();
-    }
   }
 
   _resetWorkout(PausableTimer activeTimer) {
