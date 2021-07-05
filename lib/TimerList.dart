@@ -41,7 +41,19 @@ class _TimerListState extends State<TimerList> {
   }
 
   _buildTimer(int timerIndex) {
-    return timers[timerIndex];
+    //Because using a ReorderableListView, the list items get rebuild on long presses and drags which means that their key also changes.
+    //Using the hash of the widget to get around using the same key. Not the best solution but it works for now.
+    return Dismissible(
+        key: Key(timers[timerIndex].excerciseName +
+            "_" +
+            timers[timerIndex].hashCode.toRadixString(3)),
+        child: timers[timerIndex],
+        background: Container(color: Colors.red),
+        onDismissed: (direction) {
+          setState(() {
+            timers.removeAt(timerIndex);
+          });
+        });
   }
 
   _startWorkout() {
