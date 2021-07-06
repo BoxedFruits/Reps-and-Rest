@@ -1,6 +1,9 @@
 # Reps and Rest 💪
 
-https://user-images.githubusercontent.com/34636700/124534198-be004180-dde1-11eb-9f4f-185f160201b5.mp4
+
+![Reps-And-Reps](https://user-images.githubusercontent.com/34636700/124534641-af665a00-dde2-11eb-818f-ca1276e16adc.gif)
+
+
 
 An app to help you keep track of your workouts and which excercises you are doing. Set a timer for however long you like and a sound will play a few seconds before the next excercise or rest set starts. You can delete and reorder your excercises as well as soon be able to save your entire workouts!
 
