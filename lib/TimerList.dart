@@ -1,16 +1,22 @@
+import 'dart:convert';
 import 'dart:typed_data';
-import 'package:myapp/Timer.dart';
+import 'package:myapp/ExcerciseTimer.dart';
 import 'package:pausable_timer/pausable_timer.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 const int _tSampleRate = 44100;
 const int _tNumChannels = 2;
 
-class TimerList extends StatefulWidget {
-  TimerList({Key? key}) : super(key: key);
+//Each time user adds a workout, should save the data
 
+class TimerList extends StatefulWidget {
+  TimerList({Key? key, this.timers}) : super(key: key);
+
+  List<ExcerciseTimer>? timers = [];
   @override
   _TimerListState createState() => _TimerListState();
 }
@@ -21,22 +27,26 @@ class _TimerListState extends State<TimerList> {
   bool busy = false;
   Uint8List? soundAffectData;
 
-  List<Timer> timers = [];
+  late SharedPreferences _prefs;
+
+  late TextEditingController _workoutNameController;
+  // List<ExcerciseTimer> timers = [];
   int currentTimerIndex = 0;
+  String workoutName = "New Workout";
   String actionText = "Start Workout";
   PausableTimer currentTimer =
       PausableTimer(Duration(minutes: 0, seconds: 0), () {});
 
   _addTimer() {
-    final newIndex = timers.length;
-    final newTimer = Timer(
+    final newIndex = widget.timers?.length;
+    final newTimer = ExcerciseTimer(
         key: ValueKey(newIndex),
         timerIndex: newIndex,
         excerciseName: "New Excercise",
         excerciseDuration: new Duration(minutes: 0, seconds: 0));
 
     setState(() {
-      timers.add(newTimer);
+      widget.timers?.add(newTimer);
     });
   }
 
@@ -44,14 +54,14 @@ class _TimerListState extends State<TimerList> {
     //Because using a ReorderableListView, the list items get rebuild on long presses and drags which means that their key also changes.
     //Using the hash of the widget to get around using the same key. Not the best solution but it works for now.
     return Dismissible(
-        key: Key(timers[timerIndex].excerciseName +
+        key: Key(widget.timers![timerIndex].excerciseName +
             "_" +
-            timers[timerIndex].hashCode.toRadixString(3)),
-        child: timers[timerIndex],
+            widget.timers![timerIndex].hashCode.toRadixString(3)),
+        child: widget.timers![timerIndex],
         background: Container(color: Colors.red),
         onDismissed: (direction) {
           setState(() {
-            timers.removeAt(timerIndex);
+            widget.timers?.removeAt(timerIndex);
           });
         });
   }
@@ -59,15 +69,15 @@ class _TimerListState extends State<TimerList> {
   _startWorkout() {
     //Start at 0 index of timers and start duration. Highlight current Timer?
     //Play sound at callback? If the sound has like 5 beats , can just add 5 more seconds to every timer so that it gives the user a headsup before the next excercise
-    if (currentTimerIndex < timers.length) {
+    if (currentTimerIndex < widget.timers!.length) {
       setState(() {
         actionText = "Pause Workout";
       });
       currentTimer = PausableTimer(
-          timers[currentTimerIndex].excerciseDuration,
+          widget.timers![currentTimerIndex].excerciseDuration,
           () => {
                 print('Fired! for timer: ' +
-                    timers[currentTimerIndex].excerciseName),
+                    widget.timers![currentTimerIndex].excerciseName),
                 currentTimerIndex += 1,
                 if (_mPlayerIsInited)
                   {
@@ -131,6 +141,42 @@ class _TimerListState extends State<TimerList> {
     activeTimer.reset();
   }
 
+  _saveWorkout() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return new SimpleDialog(
+            title: Text("Enter the name of the workout"),
+            children: [
+              Container(
+                width: 280,
+                height: 280,
+                child: TextField(
+                  controller: _workoutNameController,
+                ),
+              ),
+              new TextButton(
+                child: new Text('Save'),
+                onPressed: () {
+                  setState(() {
+                    workoutName = _workoutNameController
+                        .text; //Make sure its not empty string
+                  });
+                  String encodedTimers = jsonEncode(widget.timers);
+
+                  // print(jsonDecode(encodedTimers));
+                  _prefs.setString('${workoutName}', encodedTimers);
+                  // print(_prefs.getKeys());
+                  print(widget.timers);
+
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
+  }
+
   void play(Uint8List? data) async {
     if (!busy && _mPlayerIsInited) {
       busy = true;
@@ -157,9 +203,18 @@ class _TimerListState extends State<TimerList> {
     );
   }
 
+  void loadSharedPreferences() async {
+    _prefs = await SharedPreferences.getInstance();
+  }
+
   @override
   void initState() {
     super.initState();
+
+    _workoutNameController = TextEditingController(text: workoutName);
+
+    loadSharedPreferences();
+
     init().then((value) => setState(() {
           _mPlayerIsInited = true;
         }));
@@ -171,6 +226,7 @@ class _TimerListState extends State<TimerList> {
     _myPlayer!.closeAudioSession();
     _myPlayer = null;
 
+    _workoutNameController.dispose();
     super.dispose();
   }
 
@@ -180,15 +236,15 @@ class _TimerListState extends State<TimerList> {
       Flex(direction: Axis.vertical, children: [
         Expanded(
           child: ReorderableListView.builder(
-            itemCount: timers.length,
+            itemCount: widget.timers!.length,
             itemBuilder: (context, index) => this._buildTimer(index),
             onReorder: (int oldIndex, int newIndex) {
               setState(() {
                 if (oldIndex < newIndex) {
                   newIndex -= 1;
                 }
-                final Timer item = timers.removeAt(oldIndex);
-                timers.insert(newIndex, item);
+                final ExcerciseTimer item = widget.timers!.removeAt(oldIndex);
+                widget.timers?.insert(newIndex, item);
               });
             },
           ),
@@ -219,6 +275,9 @@ class _TimerListState extends State<TimerList> {
                             onPressed: () =>
                                 _resetCurrentExcercise(currentTimer),
                             child: Text("Reset Current Timer")),
+                        ElevatedButton(
+                            onPressed: _saveWorkout,
+                            child: Text("Save Workout")),
                       ])));
             },
           ),

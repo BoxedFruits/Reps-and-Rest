@@ -1,29 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
-class Timer extends StatefulWidget {
-  Timer({
+class ExcerciseTimer extends StatefulWidget {
+  ExcerciseTimer({
     Key? key,
-    required this.timerIndex,
+    this.timerIndex,
     required this.excerciseName,
     required this.excerciseDuration,
   }) : super(key: key);
 
-  final int timerIndex;
+  ExcerciseTimer.fromJson(Map<String, dynamic> json)
+      : excerciseName = json['excerciseName'],
+        excerciseDuration = json['excerciseDuration'];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'excerciseName': excerciseName,
+      'excerciseDuration': excerciseDuration
+          .toString(), //Need to turn this back into Duration when retrieving data
+    };
+  }
+
+  int? timerIndex;
   Duration excerciseDuration;
   String excerciseName;
 
   @override
-  _TimerState createState() => _TimerState();
+  _ExcerciseTimerState createState() => _ExcerciseTimerState();
 }
 
-class _TimerState extends State<Timer> {
+class _ExcerciseTimerState extends State<ExcerciseTimer> {
   late Duration excerciseDuration;
   late String excerciseName;
   late TextEditingController _excerciseNameController;
-
-  // @override
-  // bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -52,9 +61,9 @@ class _TimerState extends State<Timer> {
     return ListTile(
       isThreeLine: true,
       title: Text(
-        (widget.timerIndex + 1).toString() + " " + excerciseName,
+        excerciseName,
       ),
-      subtitle: Text('Time left: ${excerciseDuration.inSeconds} seconds'),
+      subtitle: Text('Duration: ${excerciseDuration.inSeconds} seconds'),
       onTap: () {
         _showDialog(
           context,

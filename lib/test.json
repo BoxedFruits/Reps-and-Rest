@@ -1,0 +1,12 @@
+[{"workoutName": "test"
+    ,"excercises": [
+        {
+            "excerciseName": "New Excercise",
+            "excerciseDuration": "0:00:00.000000"
+        },
+        {
+            "excerciseName": "New Excercise",
+            "excerciseDuration": "0:00:00.000000"
+        }
+    ]
+}]
