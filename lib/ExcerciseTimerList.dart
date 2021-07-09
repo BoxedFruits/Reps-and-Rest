@@ -13,15 +13,15 @@ const int _tNumChannels = 2;
 
 //Each time user adds a workout, should save the data
 
-class TimerList extends StatefulWidget {
-  TimerList({Key? key, this.timers}) : super(key: key);
+class ExcerciseTimerList extends StatefulWidget {
+  ExcerciseTimerList({Key? key, this.timers}) : super(key: key);
 
   List<ExcerciseTimer>? timers = [];
   @override
-  _TimerListState createState() => _TimerListState();
+  _ExcerciseTimerListState createState() => _ExcerciseTimerListState();
 }
 
-class _TimerListState extends State<TimerList> {
+class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
   FlutterSoundPlayer? _myPlayer = FlutterSoundPlayer();
   bool _mPlayerIsInited = false;
   bool busy = false;
@@ -164,10 +164,7 @@ class _TimerListState extends State<TimerList> {
                   });
                   String encodedTimers = jsonEncode(widget.timers);
 
-                  // print(jsonDecode(encodedTimers));
                   _prefs.setString('${workoutName}', encodedTimers);
-                  // print(_prefs.getKeys());
-                  print(widget.timers);
 
                   Navigator.of(context).pop();
                 },
