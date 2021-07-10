@@ -30,7 +30,6 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
   late SharedPreferences _prefs;
 
   late TextEditingController _workoutNameController;
-  // List<ExcerciseTimer> timers = [];
   int currentTimerIndex = 0;
   String workoutName = "New Workout";
   String actionText = "Start Workout";

@@ -39,7 +39,10 @@ class _WorkoutListState extends State<WorkoutList> {
       child: ListView(
         children: <Widget>[
           DrawerHeader(child: Text('Timers')),
-          ListView.builder(
+          ListView.separated(
+              separatorBuilder: (context, index) => Divider(
+                    color: Colors.black,
+                  ),
               shrinkWrap: true,
               itemCount: workouts.length,
               itemBuilder: (context, int index) {

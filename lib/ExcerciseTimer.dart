@@ -58,11 +58,12 @@ class _ExcerciseTimerState extends State<ExcerciseTimer> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      isThreeLine: true,
+    return Card(
+        child: ListTile(
       title: Text(
         excerciseName,
       ),
+      trailing: Icon(Icons.drag_handle_sharp),
       subtitle: Text('Duration: ${excerciseDuration.inSeconds} seconds'),
       onTap: () {
         _showDialog(
@@ -70,7 +71,7 @@ class _ExcerciseTimerState extends State<ExcerciseTimer> {
           updateExcercise,
         );
       },
-    );
+    ));
   }
 
   _showDialog(
