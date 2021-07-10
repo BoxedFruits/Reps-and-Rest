@@ -150,15 +150,14 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
           return new SimpleDialog(
             title: Text("Enter the name of the workout"),
             children: [
-              Container(
-                width: 280,
-                height: 280,
+              Padding(
+                padding: EdgeInsets.all(20.0),
                 child: TextField(
                   controller: _workoutNameController,
                 ),
               ),
-              new TextButton(
-                child: new Text('Save'),
+              TextButton(
+                child: Text('Save'),
                 onPressed: () {
                   setState(() {
                     workoutName = _workoutNameController

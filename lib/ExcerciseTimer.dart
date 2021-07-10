@@ -100,7 +100,6 @@ class _ExcerciseTimerState extends State<ExcerciseTimer> {
             new TextButton(
               child: new Text('Save'),
               onPressed: () {
-                //SetState when clicking saved
                 updateExcerciseCallback();
                 Navigator.of(context).pop();
               },
