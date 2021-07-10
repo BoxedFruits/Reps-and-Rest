@@ -51,23 +51,28 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
 
   _buildTimer(int timerIndex) {
     //Because using a ReorderableListView, the list items get rebuild on long presses and drags which means that their key also changes.
-    //Using the hash of the widget to get around using the same key. Not the best solution but it works for now.
-    return Dismissible(
+    //Using the hash of the widget to get around using the same key. Not the best solution but it works for now
+    return Container(
+        color:
+            timerIndex == currentTimerIndex ? Colors.red : Colors.transparent,
         key: Key(widget.timers![timerIndex].excerciseName +
             "_" +
             widget.timers![timerIndex].hashCode.toRadixString(3)),
-        child: widget.timers![timerIndex],
-        background: Container(color: Colors.red),
-        onDismissed: (direction) {
-          setState(() {
-            widget.timers?.removeAt(timerIndex);
-          });
-        });
+        child: Dismissible(
+            key: Key(widget.timers![timerIndex].excerciseName +
+                "_" +
+                widget.timers![timerIndex].hashCode.toRadixString(3)),
+            child: widget.timers![timerIndex],
+            background: Container(color: Colors.red),
+            onDismissed: (direction) {
+              setState(() {
+                widget.timers?.removeAt(timerIndex);
+              });
+            }));
   }
 
   _startWorkout() {
     //Start at 0 index of timers and start duration. Highlight current Timer?
-    //Play sound at callback? If the sound has like 5 beats , can just add 5 more seconds to every timer so that it gives the user a headsup before the next excercise
     if (currentTimerIndex < widget.timers!.length) {
       setState(() {
         actionText = "Pause Workout";

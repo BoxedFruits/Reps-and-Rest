@@ -46,23 +46,34 @@ class _WorkoutListState extends State<WorkoutList> {
               shrinkWrap: true,
               itemCount: workouts.length,
               itemBuilder: (context, int index) {
-                return ListTile(
-                    title: Text(workouts.elementAt(index)),
-                    onTap: () {
-                      _prefs.then((SharedPreferences pref) {
-                        List<dynamic> decodedJson = jsonDecode(
-                            pref.getString(workouts.elementAt(index)) ?? '');
-                        List<ExcerciseTimer> foo = decodedJson
-                            .map((e) => ExcerciseTimer.fromJson({
-                                  'excerciseName': e['excerciseName'],
-                                  'excerciseDuration':
-                                      parseDuration(e['excerciseDuration'])
-                                }))
-                            .toList();
-                        widget.updateExcerciseTimersCallback(foo);
-                        Navigator.of(context).pop();
+                return Dismissible(
+                    key: Key(workouts.elementAt(index) +
+                        "_" +
+                        workouts.hashCode.toRadixString(3)),
+                    background: Container(color: Colors.red),
+                    onDismissed: (direction) {
+                      setState(() {
+                        workouts.remove(workouts.elementAt(index));
                       });
-                    });
+                    },
+                    child: ListTile(
+                        title: Text(workouts.elementAt(index)),
+                        onTap: () {
+                          _prefs.then((SharedPreferences pref) {
+                            List<dynamic> decodedJson = jsonDecode(
+                                pref.getString(workouts.elementAt(index)) ??
+                                    '');
+                            List<ExcerciseTimer> foo = decodedJson
+                                .map((e) => ExcerciseTimer.fromJson({
+                                      'excerciseName': e['excerciseName'],
+                                      'excerciseDuration':
+                                          parseDuration(e['excerciseDuration'])
+                                    }))
+                                .toList();
+                            widget.updateExcerciseTimersCallback(foo);
+                            Navigator.of(context).pop();
+                          });
+                        }));
               }),
           Container(
             alignment: Alignment.bottomRight,
