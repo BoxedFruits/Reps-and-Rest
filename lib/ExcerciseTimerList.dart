@@ -80,8 +80,6 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
       currentTimer = PausableTimer(
           widget.timers![currentTimerIndex].excerciseDuration,
           () => {
-                print('Fired! for timer: ' +
-                    widget.timers![currentTimerIndex].excerciseName),
                 currentTimerIndex += 1,
                 if (_mPlayerIsInited)
                   {
@@ -180,7 +178,6 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
       busy = true;
       await _myPlayer!.feedFromStream(data!).then((value) => busy = false);
     }
-    print("SOUND DOUNE");
   }
 
   Future<Uint8List> getAssetData(String path) async {
@@ -192,7 +189,7 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
     await _myPlayer!.openAudioSession();
     soundAffectData = FlutterSoundHelper().waveToPCMBuffer(
       inputBuffer: await getAssetData(
-          'assets/soundaffects/mixkit-sport-start-bleeps-918.wav'),
+          'assets/soundaffects/mixkit-digital-quick-tone-2866.wav'),
     );
     await _myPlayer!.startPlayerFromStream(
       codec: Codec.pcm16,
