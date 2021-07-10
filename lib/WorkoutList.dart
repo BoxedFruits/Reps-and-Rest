@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:myapp/ExcerciseTimerList.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:myapp/ExcerciseTimer.dart';
 
@@ -83,7 +84,17 @@ class _WorkoutListState extends State<WorkoutList> {
               }),
           Container(
             alignment: Alignment.bottomRight,
-            child: OutlinedButton(onPressed: () {}, child: Text("Add Workout")),
+            margin: EdgeInsets.only(right: 16),
+            child: OutlinedButton(
+                onPressed: () {
+                  widget.updateExcerciseTimersCallback([
+                    new ExcerciseTimer(
+                        excerciseName: 'New Excercise',
+                        excerciseDuration: Duration())
+                  ]);
+                  Navigator.of(context).pop();
+                },
+                child: Text("Add Workout")),
           )
         ],
       ),
