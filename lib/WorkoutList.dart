@@ -36,9 +36,12 @@ class _WorkoutListState extends State<WorkoutList> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: ListView(
-        children: <Widget>[
-          DrawerHeader(child: Text('Timers')),
+      child: Column(
+        children: [
+          Container(
+              child: Text('Workouts',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 32)),
+              padding: EdgeInsets.only(top: 32, bottom: 32)),
           ListView.separated(
               separatorBuilder: (context, index) => Divider(
                     color: Colors.black,
