@@ -55,8 +55,11 @@ class _WorkoutListState extends State<WorkoutList> {
                         workouts.hashCode.toRadixString(3)),
                     background: Container(color: Colors.red),
                     onDismissed: (direction) {
-                      setState(() {
-                        workouts.remove(workouts.elementAt(index));
+                      _prefs.then((SharedPreferences pref) {
+                        pref.remove(workouts.elementAt(index));
+                        setState(() {
+                          workouts.remove(workouts.elementAt(index));
+                        });
                       });
                     },
                     child: ListTile(

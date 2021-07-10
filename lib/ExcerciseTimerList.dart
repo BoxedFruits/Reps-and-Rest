@@ -127,7 +127,6 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
   }
 
   _resetWorkout(PausableTimer activeTimer) {
-    //Reset currentTimer and then reset currentTimerIndex back to 0
     setState(() {
       actionText = "Start Workout";
     });
@@ -138,7 +137,6 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
   }
 
   _resetCurrentExcercise(PausableTimer activeTimer) {
-    //Show flood for last excercise when this is pressed?
     setState(() {
       actionText = "Pause Workout";
     });
