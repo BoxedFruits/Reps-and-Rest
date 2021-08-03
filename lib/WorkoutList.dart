@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/ExcerciseTimerList.dart';
+import 'package:myapp/ExcerciseList.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:myapp/ExcerciseTimer.dart';
+import 'package:myapp/TimerWorkout.dart';
 
 import 'dart:convert';
 
@@ -70,8 +70,8 @@ class _WorkoutListState extends State<WorkoutList> {
                             List<dynamic> decodedJson = jsonDecode(
                                 pref.getString(workouts.elementAt(index)) ??
                                     '');
-                            List<ExcerciseTimer> foo = decodedJson
-                                .map((e) => ExcerciseTimer.fromJson({
+                            List<dynamic> foo = decodedJson
+                                .map((e) => TimerWorkout.fromJson({
                                       'excerciseName': e['excerciseName'],
                                       'excerciseDuration':
                                           parseDuration(e['excerciseDuration'])
@@ -88,7 +88,7 @@ class _WorkoutListState extends State<WorkoutList> {
             child: OutlinedButton(
                 onPressed: () {
                   widget.updateExcerciseTimersCallback([
-                    new ExcerciseTimer(
+                    new TimerWorkout(
                         excerciseName: 'New Excercise',
                         excerciseDuration: Duration())
                   ]);
