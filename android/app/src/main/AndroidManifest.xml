@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.myapp">
+    package="com.dindle.RestAndReps">
    <application
         android:label="Reps 💪"
         android:icon="@mipmap/ic_launcher">

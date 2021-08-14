@@ -1,16 +1,12 @@
-# myapp
+# Reps and Rest 💪
 
-A new Flutter project.
+<img src="./assets/restandreps.gif" width="320" height="620">
 
-## Getting Started
+An app to help you keep track of your workouts and which excercises you are doing. Set a timer for however long you like and a sound will play when the next excercise or rest set starts. You can delete and reorder your excercises as well as soon be able to save your entire workouts!
 
-This project is a starting point for a Flutter application.
+***
+About this project
 
-A few resources to get you started if this is your first Flutter project:
+This is a project that I wanted to start because I liked going to the gym. The premise of this app is to keep track of time inbetween sets and reps. I know that there are a million types of these apps and that's why I wanted to make one of my own. It is one of those "If you can do it I can do it better" kind of deals, but among the many things developing Reps and Rest has taught me is that good quality software is hard and *very* time consuming.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+There is still a million things I want to do with this app. The priority right now is trying to implement a way to save workouts and have a list of them so a user can for example have a list saved like `Ab circuit`, `Arms`, `Back/biceps`. After that, there will be a ton of UI enhancements!
