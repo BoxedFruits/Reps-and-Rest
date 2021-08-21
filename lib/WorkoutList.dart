@@ -105,11 +105,13 @@ class _WorkoutListState extends State<WorkoutList> {
             margin: EdgeInsets.only(right: 16),
             child: OutlinedButton(
                 onPressed: () {
-                  widget.updateExcerciseTimersCallback([
-                    new TimerWorkout(
-                        excerciseName: 'New Excercise',
-                        excerciseDuration: Duration())
-                  ]);
+                  List<dynamic> newWorkout =
+                      []; // Have to do this because Dart inferences the type if just passing in the list
+                  newWorkout.add(new TimerWorkout(
+                      excerciseName: 'New Excercise',
+                      excerciseDuration: Duration()));
+                  widget.updateExcerciseTimersCallback(
+                      newWorkout); // This gives it a type
                   Navigator.of(context).pop();
                 },
                 child: Text("Add Workout")),

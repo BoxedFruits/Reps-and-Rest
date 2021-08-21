@@ -39,7 +39,7 @@ class _ExcerciseListState extends State<ExcerciseList> {
       PausableTimer(Duration(minutes: 0, seconds: 0), () {});
 
   _addExcercise() {
-    final newIndex = widget.excerciseList?.length;
+    final newIndex = (widget.excerciseList as dynamic).length;
     showDialog(
         context: context,
         builder: (BuildContext context) {
