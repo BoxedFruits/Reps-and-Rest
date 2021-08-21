@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/ExcerciseList.dart';
-import 'package:myapp/workoutWidgets/TimerWorkout.dart';
 import 'package:myapp/WorkoutList.dart';
 
 void main() {

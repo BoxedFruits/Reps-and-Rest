@@ -3,18 +3,29 @@ import 'package:flutter/material.dart';
 class CheckedWorkout extends StatefulWidget {
   CheckedWorkout(
       {Key? key,
-      this.timerIndex,
       required this.excerciseName,
       required this.isCurrentExcercise,
-      required this.update,
+      this.update, // Can probably move this to be an onClick handler outside of widget
       required this.checked})
       : super(key: key);
 
-  int? timerIndex;
   String excerciseName;
   bool isCurrentExcercise;
   bool checked;
-  Function update;
+  Function? update;
+
+  CheckedWorkout.fromJson(Map<String, dynamic> json)
+      : excerciseName = json['excerciseName'],
+        isCurrentExcercise = json['isCurrentExcercise'],
+        checked = json['checked'];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'excerciseName': excerciseName,
+      'isCurrentExcercise': false,
+      'checked': false
+    };
+  }
 
   @override
   _CheckedWorkoutState createState() => _CheckedWorkoutState();
@@ -71,7 +82,7 @@ class _CheckedWorkoutState extends State<CheckedWorkout> {
             : (bool? value) {
                 setState(() {
                   widget.checked = true;
-                  widget.update();
+                  widget.update!();
                 });
               },
       ),
@@ -97,7 +108,6 @@ class _CheckedWorkoutState extends State<CheckedWorkout> {
             controller: _excerciseNameController,
           ),
           children: [
-            Text(widget.timerIndex.toString()),
             new TextButton(
               child: new Text('Save'),
               onPressed: () {

@@ -9,15 +9,14 @@ class TimerWorkout extends StatefulWidget {
     required this.excerciseDuration,
   }) : super(key: key);
 
-  TimerWorkout.fromJson(Map<String, dynamic> json)
-      : excerciseName = json['excerciseName'],
-        excerciseDuration = json['excerciseDuration'];
+  TimerWorkout.fromJson(Map<String, String> json)
+      : excerciseName = json['excerciseName'] ?? '',
+        excerciseDuration = parseDuration(json['excerciseDuration'].toString());
 
-  Map<String, dynamic> toJson() {
+  Map<String, String> toJson() {
     return {
       'excerciseName': excerciseName,
-      'excerciseDuration': excerciseDuration
-          .toString(), //Need to turn this back into Duration when retrieving data
+      'excerciseDuration': excerciseDuration.toString()
     };
   }
 
@@ -109,4 +108,20 @@ class _TimerWorkoutState extends State<TimerWorkout> {
       },
     );
   }
+}
+
+Duration parseDuration(String s) {
+  //Seperate this into utils/parseDuration.dart. Don't know how to import right now
+  int hours = 0;
+  int minutes = 0;
+  int micros;
+  List<String> parts = s.split(':');
+  if (parts.length > 2) {
+    hours = int.parse(parts[parts.length - 3]);
+  }
+  if (parts.length > 1) {
+    minutes = int.parse(parts[parts.length - 2]);
+  }
+  micros = (double.parse(parts[parts.length - 1]) * 1000000).round();
+  return Duration(hours: hours, minutes: minutes, microseconds: micros);
 }

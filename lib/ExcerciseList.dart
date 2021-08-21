@@ -15,8 +15,7 @@ const int _tNumChannels = 2;
 class ExcerciseList extends StatefulWidget {
   ExcerciseList({Key? key, this.excerciseList}) : super(key: key);
 
-  List<dynamic>? excerciseList =
-      []; // Takes in TimerWorkout and Checked Workout
+  List<dynamic>? excerciseList = []; // Takes in TimerWorkout and CheckedWorkout
   @override
   _ExcerciseListState createState() => _ExcerciseListState();
 }
@@ -72,7 +71,6 @@ class _ExcerciseListState extends State<ExcerciseList> {
                               setState(() {
                                 final newTimer = CheckedWorkout(
                                   key: ValueKey(newIndex),
-                                  timerIndex: newIndex,
                                   update: () => {},
                                   isCurrentExcercise: newIndex == 0,
                                   excerciseName: "New Excercise",
@@ -93,6 +91,7 @@ class _ExcerciseListState extends State<ExcerciseList> {
   _buildTimer(int timerIndex) {
     //Because using a ReorderableListView, the list items get rebuild on long presses and drags which means that their key also changes.
     //Using the hash of the widget to get around using the same key. Not the best solution but it works for now
+    // print(widget.excerciseList![timerIndex].runtimeType);
     return Container(
         color: timerIndex == currentExcerciseIndex
             ? Colors.red
@@ -244,9 +243,8 @@ class _ExcerciseListState extends State<ExcerciseList> {
                     workoutName = _workoutNameController
                         .text; //Make sure its not empty string
                   });
-                  String encodedTimers = jsonEncode(widget.excerciseList);
-
-                  _prefs.setString('${workoutName}', encodedTimers);
+                  String encodedExcercises = jsonEncode(widget.excerciseList);
+                  _prefs.setString('${workoutName}', encodedExcercises);
 
                   Navigator.of(context).pop();
                 },
@@ -310,7 +308,6 @@ class _ExcerciseListState extends State<ExcerciseList> {
 
   @override
   Widget build(BuildContext context) {
-    print("list build");
     return Stack(children: [
       Flex(direction: Axis.vertical, children: [
         Expanded(

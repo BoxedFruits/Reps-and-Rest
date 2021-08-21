@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/ExcerciseList.dart';
+import 'package:myapp/workoutWidgets/CheckedWorkout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:myapp/workoutWidgets/TimerWorkout.dart';
 
@@ -68,16 +68,34 @@ class _WorkoutListState extends State<WorkoutList> {
                         onTap: () {
                           _prefs.then((SharedPreferences pref) {
                             List<dynamic> decodedJson = jsonDecode(
+                                //Part of the trouble. Have to decode the json again
                                 pref.getString(workouts.elementAt(index)) ??
                                     '');
-                            List<dynamic> foo = decodedJson
-                                .map((e) => TimerWorkout.fromJson({
-                                      'excerciseName': e['excerciseName'],
-                                      'excerciseDuration':
-                                          parseDuration(e['excerciseDuration'])
-                                    }))
-                                .toList();
-                            widget.updateExcerciseTimersCallback(foo);
+                            List<dynamic> decodedWorkout = [];
+
+                            decodedJson.forEach((e) => {
+                                  if (e['excerciseDuration'] != null)
+                                    {
+                                      decodedWorkout.add(TimerWorkout.fromJson({
+                                        'excerciseName': e['excerciseName'],
+                                        'excerciseDuration':
+                                            e['excerciseDuration'].toString(),
+                                      }))
+                                    }
+                                  else
+                                    {
+                                      decodedWorkout
+                                          .add(CheckedWorkout.fromJson({
+                                        'excerciseName': e['excerciseName'],
+                                        'isCurrentExcercise':
+                                            e['isCurrentExcercise'],
+                                        'checked': e['checked']
+                                      }))
+                                    }
+                                });
+
+                            widget
+                                .updateExcerciseTimersCallback(decodedWorkout);
                             Navigator.of(context).pop();
                           });
                         }));
@@ -100,20 +118,4 @@ class _WorkoutListState extends State<WorkoutList> {
       ),
     );
   }
-}
-
-Duration parseDuration(String s) {
-  //Seperate this into utils/parseDuration.dart. Don't know how to import right now
-  int hours = 0;
-  int minutes = 0;
-  int micros;
-  List<String> parts = s.split(':');
-  if (parts.length > 2) {
-    hours = int.parse(parts[parts.length - 3]);
-  }
-  if (parts.length > 1) {
-    minutes = int.parse(parts[parts.length - 2]);
-  }
-  micros = (double.parse(parts[parts.length - 1]) * 1000000).round();
-  return Duration(hours: hours, minutes: minutes, microseconds: micros);
 }
