@@ -339,9 +339,8 @@ class _ExcerciseListState extends State<ExcerciseList> {
               return IntrinsicHeight(
                   child: Container(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.horizontal(
-                            left: Radius.circular(25),
-                            right: Radius.circular(25)),
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(25)),
                         color: Colors.grey,
                       ),
                       child: ListView(controller: scrollController, children: [
