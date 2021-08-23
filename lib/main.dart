@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/ExcerciseTimerList.dart';
-import 'package:myapp/ExcerciseTimer.dart';
+import 'package:myapp/ExcerciseList.dart';
 import 'package:myapp/WorkoutList.dart';
 
 void main() {
@@ -8,9 +7,9 @@ void main() {
 }
 
 class _MainPageState extends State<MainPage> {
-  List<ExcerciseTimer> excerciseTimers = [];
+  List<dynamic> excerciseTimers = [];
 
-  updateExcerciseTimers(List<ExcerciseTimer> timers) {
+  updateExcerciseTimers(List<dynamic> timers) {
     setState(() {
       excerciseTimers = timers;
     });
@@ -20,14 +19,13 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return MaterialApp(
         title: 'Rest and Reps 💪',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
+        theme:
+            ThemeData(primarySwatch: Colors.blue, brightness: Brightness.dark),
         home: Scaffold(
           appBar: AppBar(
             title: Text("Rest and Reps 💪"),
           ),
-          body: ExcerciseTimerList(timers: excerciseTimers),
+          body: ExcerciseList(excerciseList: excerciseTimers),
           drawer:
               WorkoutList(updateExcerciseTimersCallback: updateExcerciseTimers),
         ));

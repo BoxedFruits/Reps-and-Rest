@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:myapp/ExcerciseTimer.dart';
+import 'package:myapp/workoutWidgets/CheckedWorkout.dart';
+import 'package:myapp/workoutWidgets/TimerWorkout.dart';
 import 'package:pausable_timer/pausable_timer.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -11,17 +12,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 const int _tSampleRate = 44100;
 const int _tNumChannels = 2;
 
-//Each time user adds a workout, should save the data
+class ExcerciseList extends StatefulWidget {
+  ExcerciseList({Key? key, this.excerciseList}) : super(key: key);
 
-class ExcerciseTimerList extends StatefulWidget {
-  ExcerciseTimerList({Key? key, this.timers}) : super(key: key);
-
-  List<ExcerciseTimer>? timers = [];
+  List<dynamic>? excerciseList = []; // Takes in TimerWorkout and CheckedWorkout
   @override
-  _ExcerciseTimerListState createState() => _ExcerciseTimerListState();
+  _ExcerciseListState createState() => _ExcerciseListState();
 }
 
-class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
+class _ExcerciseListState extends State<ExcerciseList> {
   FlutterSoundPlayer? _myPlayer = FlutterSoundPlayer();
   bool _mPlayerIsInited = false;
   bool busy = false;
@@ -30,69 +29,148 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
   late SharedPreferences _prefs;
 
   late TextEditingController _workoutNameController;
-  int currentTimerIndex = 0;
+  int currentExcerciseIndex = 0;
   String workoutName = "New Workout";
   String actionText = "Start Workout";
+
+  bool isWorkoutActive = false;
+
   PausableTimer currentTimer =
       PausableTimer(Duration(minutes: 0, seconds: 0), () {});
 
-  _addTimer() {
-    final newIndex = widget.timers?.length;
-    final newTimer = ExcerciseTimer(
-        key: ValueKey(newIndex),
-        timerIndex: newIndex,
-        excerciseName: "New Excercise",
-        excerciseDuration: new Duration(minutes: 0, seconds: 0));
-
-    setState(() {
-      widget.timers?.add(newTimer);
-    });
+  _addExcercise() {
+    final newIndex = (widget.excerciseList as dynamic).length;
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return new SimpleDialog(
+              title: Text("Select Type Of Excercise"),
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              final newTimer = TimerWorkout(
+                                  key: ValueKey(newIndex),
+                                  timerIndex: newIndex,
+                                  excerciseName: "New Excercise",
+                                  excerciseDuration:
+                                      new Duration(minutes: 0, seconds: 0));
+                              widget.excerciseList?.add(newTimer);
+                            });
+                            Navigator.of(context).pop();
+                          },
+                          icon: Icon(Icons.timer),
+                          label: Text('Timed')),
+                    ),
+                    Expanded(
+                        child: TextButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                final newTimer = CheckedWorkout(
+                                  key: ValueKey(newIndex),
+                                  update: () => {},
+                                  isCurrentExcercise: newIndex == 0,
+                                  excerciseName: "New Excercise",
+                                  checked: false,
+                                );
+                                widget.excerciseList?.add(newTimer);
+                              });
+                              Navigator.of(context).pop();
+                            },
+                            icon: Icon(Icons.check_box),
+                            label: Text('Checked')))
+                  ],
+                )
+              ]);
+        });
   }
 
   _buildTimer(int timerIndex) {
     //Because using a ReorderableListView, the list items get rebuild on long presses and drags which means that their key also changes.
     //Using the hash of the widget to get around using the same key. Not the best solution but it works for now
+    // print(widget.excerciseList![timerIndex].runtimeType);
     return Container(
-        color:
-            timerIndex == currentTimerIndex ? Colors.red : Colors.transparent,
-        key: Key(widget.timers![timerIndex].excerciseName +
+        color: timerIndex == currentExcerciseIndex
+            ? Colors.red
+            : Colors.transparent,
+        key: Key(widget.excerciseList![timerIndex].excerciseName +
             "_" +
-            widget.timers![timerIndex].hashCode.toRadixString(3)),
+            widget.excerciseList![timerIndex].hashCode.toRadixString(3)),
         child: Dismissible(
-            key: Key(widget.timers![timerIndex].excerciseName +
+            key: Key(widget.excerciseList![timerIndex].excerciseName +
                 "_" +
-                widget.timers![timerIndex].hashCode.toRadixString(3)),
-            child: widget.timers![timerIndex],
+                widget.excerciseList![timerIndex].hashCode.toRadixString(3)),
+            child: widget.excerciseList![timerIndex],
             background: Container(color: Colors.red),
             onDismissed: (direction) {
               setState(() {
-                widget.timers?.removeAt(timerIndex);
+                widget.excerciseList?.removeAt(timerIndex);
               });
             }));
   }
 
   _startWorkout() {
-    //Start at 0 index of timers and start duration. Highlight current Timer?
-    if (currentTimerIndex < widget.timers!.length) {
+    if (currentExcerciseIndex < widget.excerciseList!.length) {
       setState(() {
         actionText = "Pause Workout";
+        isWorkoutActive = true;
       });
-      currentTimer = PausableTimer(
-          widget.timers![currentTimerIndex].excerciseDuration,
-          () => {
-                currentTimerIndex += 1,
-                if (_mPlayerIsInited)
-                  {
-                    play(soundAffectData)
-                  }, //Need to find a way to execute the sound when its 4 sec away from duration end.
-                _startWorkout()
-              });
-      currentTimer.start();
+      if (widget.excerciseList?[currentExcerciseIndex].runtimeType ==
+          TimerWorkout) {
+        currentTimer = PausableTimer(
+            widget.excerciseList![currentExcerciseIndex].excerciseDuration,
+            () => {
+                  setState(() {
+                    currentExcerciseIndex += 1;
+                  }),
+                  if (_mPlayerIsInited)
+                    {
+                      play(soundAffectData)
+                    }, //Need to find a way to execute the sound when its 4 sec away from duration end.
+                  _startWorkout()
+                });
+        currentTimer.start();
+      } else {
+        CheckedWorkout foo = widget.excerciseList?[currentExcerciseIndex];
+        foo.checked = true;
+        foo.isCurrentExcercise = false;
+        CheckedWorkout workout = CheckedWorkout(
+          excerciseName: foo.excerciseName,
+          isCurrentExcercise: true,
+          update: () => {
+            setState(() {
+              widget.excerciseList?[currentExcerciseIndex] = foo;
+              currentExcerciseIndex += 1;
+              _startWorkout();
+            }),
+          },
+          checked: false,
+        );
+        widget.excerciseList?[currentExcerciseIndex] = workout;
+      }
     } else {
+      // Workout is finished
+      // Reset all the CheckedWorkouts
+      // Break this out into a method?
+      for (var i = 0; i < widget.excerciseList!.length; i++) {
+        if (widget.excerciseList?[i].runtimeType == CheckedWorkout) {
+          var originalExcercise = widget.excerciseList?[i];
+          widget.excerciseList?[i] = CheckedWorkout(
+              excerciseName: originalExcercise.excerciseName,
+              isCurrentExcercise: false,
+              update: () => {},
+              checked: false);
+        }
+      }
+
       setState(() {
         actionText = "Start Workout";
+        isWorkoutActive = false;
+        currentExcerciseIndex = 0;
       });
-      currentTimerIndex = 0;
     }
   }
 
@@ -111,6 +189,7 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
   _pauseWorkout(PausableTimer activeTimer) {
     setState(() {
       actionText = "Resume Workout";
+      isWorkoutActive = false;
     });
 
     activeTimer.pause();
@@ -119,6 +198,7 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
   _resumeWorkout(PausableTimer activeTimer) {
     setState(() {
       actionText = "Pause Workout";
+      isWorkoutActive = false;
     });
 
     activeTimer.start();
@@ -127,16 +207,18 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
   _resetWorkout(PausableTimer activeTimer) {
     setState(() {
       actionText = "Start Workout";
+      isWorkoutActive = true;
+      currentExcerciseIndex = 0;
     });
 
     activeTimer.cancel();
-    currentTimerIndex = 0;
     _startWorkout();
   }
 
   _resetCurrentExcercise(PausableTimer activeTimer) {
     setState(() {
       actionText = "Pause Workout";
+      isWorkoutActive = true;
     });
     activeTimer.reset();
   }
@@ -161,9 +243,8 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
                     workoutName = _workoutNameController
                         .text; //Make sure its not empty string
                   });
-                  String encodedTimers = jsonEncode(widget.timers);
-
-                  _prefs.setString('${workoutName}', encodedTimers);
+                  String encodedExcercises = jsonEncode(widget.excerciseList);
+                  _prefs.setString('${workoutName}', encodedExcercises);
 
                   Navigator.of(context).pop();
                 },
@@ -231,16 +312,18 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
       Flex(direction: Axis.vertical, children: [
         Expanded(
           child: ReorderableListView.builder(
-            itemCount: widget.timers!.length,
+            itemCount: widget.excerciseList!.length,
             itemBuilder: (context, index) => this._buildTimer(index),
             onReorder: (int oldIndex, int newIndex) {
-              setState(() {
-                if (oldIndex < newIndex) {
-                  newIndex -= 1;
-                }
-                final ExcerciseTimer item = widget.timers!.removeAt(oldIndex);
-                widget.timers?.insert(newIndex, item);
-              });
+              if (!isWorkoutActive) {
+                setState(() {
+                  if (oldIndex < newIndex) {
+                    newIndex -= 1;
+                  }
+                  final dynamic item = widget.excerciseList!.removeAt(oldIndex);
+                  widget.excerciseList?.insert(newIndex, item);
+                });
+              }
             },
           ),
         )
@@ -248,18 +331,23 @@ class _ExcerciseTimerListState extends State<ExcerciseTimerList> {
       Column(mainAxisAlignment: MainAxisAlignment.end, children: [
         //Should try to make this bottom nav bar on Scaffold
         Container(
-          height: 200,
+          height: 270,
           child: DraggableScrollableSheet(
             expand: false,
             minChildSize: 0.085,
             builder: (BuildContext context, ScrollController scrollController) {
               return IntrinsicHeight(
                   child: Container(
-                      color: Colors.white,
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(25)),
+                        color: Colors.grey,
+                      ),
                       child: ListView(controller: scrollController, children: [
-                        //Need to add a bit of styling to make it look better and obvious that its a draggableDrawer
+                        Icon(Icons.drag_handle_rounded),
                         ElevatedButton(
-                            onPressed: _addTimer, child: Text("Add Timer")),
+                            onPressed: _addExcercise,
+                            child: Text("Add Excercise")),
                         ElevatedButton(
                             onPressed: () => _workoutHandler(currentTimer),
                             child: Text(actionText)),

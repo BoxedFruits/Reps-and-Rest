@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/ExcerciseTimerList.dart';
+import 'package:myapp/workoutWidgets/CheckedWorkout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:myapp/ExcerciseTimer.dart';
+import 'package:myapp/workoutWidgets/TimerWorkout.dart';
 
 import 'dart:convert';
 
@@ -68,16 +68,34 @@ class _WorkoutListState extends State<WorkoutList> {
                         onTap: () {
                           _prefs.then((SharedPreferences pref) {
                             List<dynamic> decodedJson = jsonDecode(
+                                //Part of the trouble. Have to decode the json again
                                 pref.getString(workouts.elementAt(index)) ??
                                     '');
-                            List<ExcerciseTimer> foo = decodedJson
-                                .map((e) => ExcerciseTimer.fromJson({
-                                      'excerciseName': e['excerciseName'],
-                                      'excerciseDuration':
-                                          parseDuration(e['excerciseDuration'])
-                                    }))
-                                .toList();
-                            widget.updateExcerciseTimersCallback(foo);
+                            List<dynamic> decodedWorkout = [];
+
+                            decodedJson.forEach((e) => {
+                                  if (e['excerciseDuration'] != null)
+                                    {
+                                      decodedWorkout.add(TimerWorkout.fromJson({
+                                        'excerciseName': e['excerciseName'],
+                                        'excerciseDuration':
+                                            e['excerciseDuration'].toString(),
+                                      }))
+                                    }
+                                  else
+                                    {
+                                      decodedWorkout
+                                          .add(CheckedWorkout.fromJson({
+                                        'excerciseName': e['excerciseName'],
+                                        'isCurrentExcercise':
+                                            e['isCurrentExcercise'],
+                                        'checked': e['checked']
+                                      }))
+                                    }
+                                });
+
+                            widget
+                                .updateExcerciseTimersCallback(decodedWorkout);
                             Navigator.of(context).pop();
                           });
                         }));
@@ -87,11 +105,13 @@ class _WorkoutListState extends State<WorkoutList> {
             margin: EdgeInsets.only(right: 16),
             child: OutlinedButton(
                 onPressed: () {
-                  widget.updateExcerciseTimersCallback([
-                    new ExcerciseTimer(
-                        excerciseName: 'New Excercise',
-                        excerciseDuration: Duration())
-                  ]);
+                  List<dynamic> newWorkout =
+                      []; // Have to do this because Dart inferences the type if just passing in the list
+                  newWorkout.add(new TimerWorkout(
+                      excerciseName: 'New Excercise',
+                      excerciseDuration: Duration()));
+                  widget.updateExcerciseTimersCallback(
+                      newWorkout); // This gives it a type
                   Navigator.of(context).pop();
                 },
                 child: Text("Add Workout")),
@@ -100,20 +120,4 @@ class _WorkoutListState extends State<WorkoutList> {
       ),
     );
   }
-}
-
-Duration parseDuration(String s) {
-  //Seperate this into utils/parseDuration.dart. Don't know how to import right now
-  int hours = 0;
-  int minutes = 0;
-  int micros;
-  List<String> parts = s.split(':');
-  if (parts.length > 2) {
-    hours = int.parse(parts[parts.length - 3]);
-  }
-  if (parts.length > 1) {
-    minutes = int.parse(parts[parts.length - 2]);
-  }
-  micros = (double.parse(parts[parts.length - 1]) * 1000000).round();
-  return Duration(hours: hours, minutes: minutes, microseconds: micros);
 }
