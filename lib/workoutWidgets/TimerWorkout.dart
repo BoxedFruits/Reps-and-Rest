@@ -61,7 +61,7 @@ class _TimerWorkoutState extends State<TimerWorkout> {
       title: Text(
         excerciseName,
       ),
-      leading: Icon(Icons.timer),
+      leading: Icon(Icons.timer, size: 30),
       trailing: Icon(Icons.drag_handle_sharp),
       subtitle: Text('Duration: ${excerciseDuration.inSeconds} seconds'),
       onTap: () {
